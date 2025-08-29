@@ -6,9 +6,15 @@ const App = () => {
   const isScale = 0.5;
   const [isText, setText] = useState<string>("");
   const [isImages, setImages] = useState<HTMLImageElement[]>([]);
+  const [isImageDownload, setImageDonwload] = useState<string>("");
 
   const renderImage = async () => {
     const img = isImages[0];
+    const canvasDownload = document.createElement("canvas");
+    canvasDownload.width = img.width;
+    canvasDownload.height = img.height;
+    const ctxDownload = canvasDownload.getContext("2d")!;
+
     const ctx = useCanvas.current!.getContext("2d")!;
 
     useCanvas.current!.width = img.width * isScale;
@@ -54,7 +60,21 @@ const App = () => {
         useCanvas.current!.width,
         sh * isScale
       );
+      ctxDownload.drawImage(
+        img,
+        0,
+        +before,
+        img.width,
+        sh,
+        0,
+        +after,
+        img.width,
+        sh
+      );
     });
+
+    setImageDonwload(canvasDownload.toDataURL());
+
   };
 
   const inputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,6 +83,7 @@ const App = () => {
 
     const img = new Image();
     img.src = URL.createObjectURL(image);
+    img.alt = image.name;
     await img.decode();
     let isRow = 10;
 
@@ -72,6 +93,12 @@ const App = () => {
     setRow(isRow);
 
     setImages([img]);
+  };
+  const handleDownload = () => {
+    const a = document.createElement("a");
+    a.href = isImageDownload;
+    a.download = isImages[0].alt;
+    a.click();
   };
 
   return (
@@ -119,6 +146,14 @@ const App = () => {
               <div className="flex gap-2 items-center">
                 Key:{" "}
                 <span className="border border-dashed px-2 py-1">{isText}</span>
+              </div>
+              <div
+                className="flex justify-center items-center"
+                onClick={handleDownload}
+              >
+                <button className="outline-none px-2 py-1 bg-green-400 rounded m-2 text-white">
+                  Download Image
+                </button>
               </div>
             </div>
           )}
